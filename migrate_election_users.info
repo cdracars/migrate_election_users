@@ -1,0 +1,14 @@
+core = "7.x"
+dependencies[] = "migrate"
+description = "Import SGA election users."
+files[] = "migrate_election_users.migrate.inc"
+name = "migrate_election_users"
+package = "Migration"
+php = "5.2.4"
+
+; Information added by drupal.org packaging script on 2013-06-26
+version = "7.x-2.6-rc1"
+core = "7.x"
+project = "migrate"
+datestamp = "1372276551"
+
