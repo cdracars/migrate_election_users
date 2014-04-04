@@ -34,6 +34,7 @@ function migrate_election_users_migrate_api() {
 class SgaElectionUserMigration extends Migration {
   public function __construct($arguments) {
     parent::__construct($arguments);
+    $this->highwaterField = array();
     $this->description = t('SGA Election User Migration');
     $columns = array(
       // "Source": ('Fieldname', 'Description')
@@ -70,8 +71,8 @@ class SgaElectionUserMigration extends Migration {
     // hardcode a default value. You can also use both together - if a default
     // value is provided in addition to a source field, the default value will
     // be applied to any rows where the source field is empty or NULL.
-    $this->addFieldMapping('roles')
-         ->defaultValue(DRUPAL_AUTHENTICATED_RID);
+    //$this->addFieldMapping('roles')
+    //     ->defaultValue(DRUPAL_AUTHENTICATED_RID);
 
     // Unmapped destination fields
 
@@ -85,7 +86,7 @@ class SgaElectionUserMigration extends Migration {
       'language',
       'login',
       'picture',
-      'role_names',
+      //'role_names',
       'signature',
       'signature_format',
       'theme',
@@ -110,10 +111,86 @@ class SgaElectionUserMigration extends Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
+    
+    $arr = explode('   ', $row->major);
+    $row->major = $arr[0];
+  }
+  
+  public function prepare($node, stdClass $row) {
+    //watchdog('Classification Import', '<pre>' . print_r($row, TRUE) . '</pre>');
+    $role = new stdClass();
+    $role->name = $row->class;
+    $exists = user_roles();
+    $div_art = array('Art', 'Music', 'Communication', 'Drama', 'English');
+    $div_science = array('Physical Education', 'Mathematics', 'Biology', 'Chemistry', 'Natural Science', 'Physics');
+    $div_buisness = array('Business', 'American Indian Studies', 'Economics', 'History', 'Political Science', 'Psychology', 'Sociology');
+    $div_education = array('Early Childhood', 'Education of the Deaf', 'Elementary Education', 'Speech Language Pathology');
+    //watchdog('Classification Import', '<pre>' . print_r($exists, TRUE) . '</pre>');
+    if (!in_array($row->class, $exists)) {
+      user_role_save($role);
+    }
+    // Assign role to user here
+    foreach($exists as $rid => $role_name) {
+      if ($role_name == $role->name) {
+        $node->roles[$rid] = $role_name;
+      }
+    }
+    if (in_array($row->major, $div_art)) {
+      $role->name = 'Divison of Arts and Humanities';
 
-    $major = $row->major;
-    $arr = explode('   ', trim($major));
-    $row->major = $arr;
+      if (!in_array($role->name, $exists)) {
+        user_role_save($role);
+      }
+      // Assign role to user here
+      foreach($exists as $rid => $role_name) {
+        if ($role_name == $role->name) {
+          $node->roles[$rid] = $role_name;
+        }
+      }
+    } 
+    elseif (in_array($row->major, $div_science)) {
+      $role->name = 'Divison of Science and Physical Education';
+
+      if (!in_array($role->name, $exists)) {
+        user_role_save($role);
+      }
+      // Assign role to user here
+      foreach($exists as $rid => $role_name) {
+        if ($role_name == $role->name) {
+          $node->roles[$rid] = $role_name;
+        }
+      }
+    } 
+    elseif (in_array($row->major, $div_buisness)) {
+      $role->name = 'Divison of Buisness and Social Science';
+
+      if (!in_array($role->name, $exists)) {
+        user_role_save($role);
+      }
+      // Assign role to user here
+      foreach($exists as $rid => $role_name) {
+        if ($role_name == $role->name) {
+          $node->roles[$rid] = $role_name;
+        }
+      }
+    } 
+    elseif (in_array($row->major, $div_education)) {
+      $role->name = 'Divison of Education and Speech Language Pathology';
+
+      if (!in_array($role->name, $exists)) {
+        user_role_save($role);
+      }
+      // Assign role to user here
+      foreach($exists as $rid => $role_name) {
+        if ($role_name == $role->name) {
+          $node->roles[$rid] = $role_name;
+        }
+      }
+    } 
+    else {
+      //watchdog('Majors Role Import Fail', '<pre>' . print_r($row->major, TRUE) . '</pre>');
+      watchdog('Majors Role Import Fail', '<pre>' . print_r($node, TRUE) . '</pre>');
+    }
   }
 }
 
